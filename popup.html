@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S2 Cell Overlay</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 260px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 13px;
+      background: #1a1a2e;
+      color: #e0e0e0;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.3px;
+    }
+
+    .header .subtitle {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 2px;
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #555;
+      flex-shrink: 0;
+    }
+    .status-dot.found   { background: #4caf50; box-shadow: 0 0 6px #4caf5066; }
+    .status-dot.missing { background: #f44336; }
+    .status-dot.active  { background: #00bcd4; box-shadow: 0 0 6px #00bcd466; animation: pulse 1.6s ease-in-out infinite; }
+
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 4px #00bcd466; }
+      50%      { box-shadow: 0 0 10px #00bcd488; }
+    }
+
+    .status-text { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .status-type { font-size: 11px; color: rgba(255,255,255,0.35); margin-left: auto; font-style: italic; }
+
+    .main { padding: 12px 16px; }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .toggle-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #fff;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 42px;
+      height: 24px;
+    }
+
+    .toggle-switch input { display: none; }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: #333;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-switch input:checked ~ .toggle-track { background: #0f3460; }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      pointer-events: none;
+    }
+
+    .toggle-switch input:checked ~ .toggle-track .toggle-thumb {
+      transform: translateX(18px);
+    }
+
+    .toggle-switch input:checked ~ .toggle-track { background: #00bcd4; }
+
+    .section {
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 8px;
+    }
+
+    .cell-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .cell-row:last-child { margin-bottom: 0; }
+
+    .cell-check input[type=checkbox] {
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      accent-color: #00bcd4;
+    }
+
+    .cell-info { flex: 1; }
+    .cell-name { font-size: 12px; font-weight: 500; color: #e0e0e0; }
+    .cell-desc { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+
+    .color-pick {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .color-pick input[type=color] {
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 0;
+      background: none;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 9px;
+      background: #0f3460;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 4px;
+    }
+
+    .btn-primary:hover { background: #1a4a80; }
+    .btn-primary:disabled { background: #333; color: #666; cursor: not-allowed; }
+    .btn-primary.active { background: #00838f; }
+    .btn-primary.active:hover { background: #00bcd4; }
+
+    .info-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+
+    .info-box strong { color: rgba(255,255,255,0.75); }
+
+    .no-map-msg {
+      text-align: center;
+      padding: 16px 0 8px;
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .no-map-msg .icon { font-size: 28px; margin-bottom: 6px; }
+
+    .supported {
+      margin-top: 10px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      text-align: center;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>⬡ S2 Cell Overlay</h1>
+    <div class="subtitle">Pokémon GO planning tool</div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span class="status-text" id="statusText">Checking page…</span>
+    <span class="status-type" id="mapType"></span>
+  </div>
+
+  <div class="main">
+    <div id="mapFoundUI" style="display:none">
+      <div class="toggle-row">
+        <span class="toggle-label">Show S2 cells</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="masterToggle">
+          <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        </label>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Cell levels</div>
+
+        <div class="cell-row">
+          <div class="cell-check"><input type="checkbox" id="chkL14" checked></div>
+          <div class="cell-info">
+            <div class="cell-name">Level 14</div>
+            <div class="cell-desc">~10km² — determines gym count</div>
+          </div>
+          <div class="color-pick">
+            <input type="color" id="colorL14" value="#e040fb">
+          </div>
+        </div>
+
+        <div class="cell-row">
+          <div class="cell-check"><input type="checkbox" id="chkL17" checked></div>
+          <div class="cell-info">
+            <div class="cell-name">Level 17</div>
+            <div class="cell-desc">~300m² — one stop per cell</div>
+          </div>
+          <div class="color-pick">
+            <input type="color" id="colorL17" value="#00bcd4">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="applyBtn">Apply changes</button>
+
+      <div class="info-box">
+        <strong>Tip:</strong> Zoom in to see L17 cells (zoom ≥12) and L14 cells (zoom ≥8). L14 cells need ~2 stops for 1 gym, 6 for 2 gyms, 20 for 3 gyms.
+      </div>
+    </div>
+
+    <div id="noMapUI" style="display:none">
+      <div class="no-map-msg">
+        <div class="icon">🗺️</div>
+        <span id="noMapReason">Map not detected yet.</span>
+      </div>
+      <div class="supported">
+        Navigate to wayfarer.nianticlabs.com/new/mapview<br>
+        and wait for the map to fully load.
+      </div>
+      <button class="btn-primary" id="retryBtn" style="margin-top:10px">↺ Retry detection</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "S2 Cell Overlay – Wayfarer",
+  "version": "1.0.0",
+  "description": "Overlays S2 cells (L14 & L17) on Niantic Wayfarer maps",
+  "permissions": ["activeTab", "storage"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://wayfarer.nianticlabs.com/*"],
+      "js": ["scripts/bridge.js"],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["*://wayfarer.nianticlabs.com/*"],
+      "js": ["scripts/s2geometry.js", "scripts/content.js"],
+      "css": ["overlay.css"],
+      "run_at": "document_idle",
+      "world": "ISOLATED"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["overlay.css"],
+      "matches": ["*://wayfarer.nianticlabs.com/*"]
+    }
+  ]
+}
