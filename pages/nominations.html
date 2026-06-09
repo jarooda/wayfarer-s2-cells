@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Future Nominations</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #14141f;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 18px 14px 48px;
+    }
+
+    .wrap { max-width: 760px; margin: 0 auto; }
+
+    .page-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    .page-header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    .count { font-size: 12px; color: rgba(255,255,255,0.45); }
+
+    .subtitle { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 20px; }
+
+    .empty {
+      text-align: center;
+      padding: 60px 0;
+      color: rgba(255,255,255,0.4);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .empty .icon { font-size: 40px; display: block; margin-bottom: 10px; }
+
+    .nom {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: #1c1c2e;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+    }
+
+    .nom-pin {
+      font-size: 22px;
+      line-height: 1.4;
+      flex-shrink: 0;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+    .nom-pin:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
+
+    /* Emoji picker (markup from shared scripts/emoji.js) */
+    .s2-emoji-picker { width: 250px; }
+    .emoji-popover {
+      position: absolute;
+      top: 48px;
+      left: 16px;
+      z-index: 30;
+      background: #20203a;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .s2-emoji-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin: 8px 0 4px;
+    }
+    .s2-emoji-label:first-child { margin-top: 0; }
+    .s2-emoji-row { display: flex; flex-wrap: wrap; gap: 4px; }
+    .s2-emoji-btn {
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      line-height: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid transparent;
+      border-radius: 7px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .s2-emoji-btn:hover { background: rgba(255,255,255,0.14); }
+    .s2-emoji-btn.selected { border-color: #00bcd4; background: rgba(0,188,212,0.2); }
+
+    .nom-main { flex: 1; min-width: 0; }
+
+    .nom-title {
+      width: 100%;
+      height: 50px;
+      min-height: 36px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      color: #fff;
+      font: 600 15px/1.4 inherit;
+      padding: 6px 8px;
+      margin: -6px -8px 2px;
+      resize: vertical;
+      overflow: auto;
+    }
+    .nom-title:hover { border-color: rgba(255,255,255,0.12); }
+    .nom-title:focus { outline: none; border-color: #00bcd4; background: rgba(255,255,255,0.04); }
+
+    .nom-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .coord-link {
+      color: #4fc3f7;
+      text-decoration: none;
+      font-variant-numeric: tabular-nums;
+      border-bottom: 1px dotted rgba(79,195,247,0.5);
+    }
+    .coord-link:hover { color: #81d4fa; }
+
+    .nom-date { color: rgba(255,255,255,0.4); }
+    .saved-flash { color: #4caf50; font-size: 11px; opacity: 0; transition: opacity 0.2s; }
+    .saved-flash.show { opacity: 1; }
+
+    .nom-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+    .nom-actions .icon-btn { white-space: nowrap; text-align: left; }
+
+    .icon-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.6);
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .icon-btn.del:hover { background: rgba(244,67,54,0.18); border-color: rgba(244,67,54,0.5); color: #ff7961; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="page-header">
+      <h1>⬡ Future Nominations</h1>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="subtitle">Saved locally in this browser. Edit a title inline; click coordinates to open Google Maps.</div>
+    <div id="list"></div>
+  </div>
+  <script src="../scripts/emoji.js"></script>
+  <script src="nominations.js"></script>
+</body>
+</html>

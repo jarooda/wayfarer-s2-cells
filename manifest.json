@@ -1,16 +1,23 @@
 {
   "manifest_version": 3,
   "name": "S2 Cell Overlay – Wayfarer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Overlays S2 cells (L14 & L17) on Niantic Wayfarer maps",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "storage", "sidePanel"],
+  "host_permissions": ["*://wayfarer.nianticlabs.com/*"],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "popup/popup.html",
     "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "icons/favicon-16x16.png",
+      "32": "icons/favicon-32x32.png"
     }
+  },
+  "side_panel": {
+    "default_path": "pages/nominations.html"
+  },
+  "icons": {
+    "16": "icons/favicon-16x16.png",
+    "32": "icons/favicon-32x32.png"
   },
   "content_scripts": [
     {
@@ -21,15 +28,15 @@
     },
     {
       "matches": ["*://wayfarer.nianticlabs.com/*"],
-      "js": ["scripts/s2geometry.js", "scripts/content.js"],
-      "css": ["overlay.css"],
+      "js": ["scripts/emoji.js", "scripts/s2geometry.js", "scripts/content.js"],
+      "css": ["styles/overlay.css"],
       "run_at": "document_idle",
       "world": "ISOLATED"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["overlay.css"],
+      "resources": ["styles/overlay.css"],
       "matches": ["*://wayfarer.nianticlabs.com/*"]
     }
   ]

@@ -10,6 +10,9 @@ const chkL17       = document.getElementById('chkL17');
 const colorL14     = document.getElementById('colorL14');
 const colorL17     = document.getElementById('colorL17');
 const applyBtn     = document.getElementById('applyBtn');
+const addNomBtn    = document.getElementById('addNomBtn');
+const nomList      = document.getElementById('nomList');
+const seeAllBtn    = document.getElementById('seeAllBtn');
 
 let currentTab = null;
 let isActive   = false;
@@ -27,6 +30,7 @@ function setStatus(state, text, type) {
 function showMapUI(overlayIsActive) {
   mapFoundUI.style.display = '';
   noMapUI.style.display = 'none';
+  loadNominations();
   if (overlayIsActive) {
     setStatus('active', 'Overlay active', 'Wayfarer');
     masterToggle.checked = true;
@@ -107,6 +111,99 @@ applyBtn.addEventListener('click', () => {
     setTimeout(() => { applyBtn.textContent = 'Apply changes'; }, 1200);
   });
 });
+
+// ── Future nominations ───────────────────────────────────────────────────────
+
+function renderNomList(list) {
+  nomList.innerHTML = '';
+  const count = list ? list.length : 0;
+  seeAllBtn.textContent = count ? `See all (${count})` : 'See all';
+
+  if (!count) {
+    const empty = document.createElement('div');
+    empty.className = 'nom-empty';
+    empty.textContent = 'No nominations yet.';
+    nomList.appendChild(empty);
+    return;
+  }
+
+  // Show only the most recent (last pushed)
+  const nom = list[count - 1];
+  const item = document.createElement('div');
+  item.className = 'nom-item';
+
+  const body = document.createElement('div');
+  body.className = 'nom-body';
+  body.title = 'Zoom to on map';
+  const desc = document.createElement('div');
+  desc.className = 'nom-desc';
+  desc.textContent = nom.desc || '(no description)';
+  const meta = document.createElement('div');
+  meta.className = 'nom-meta';
+  const when = nom.createdAt ? new Date(nom.createdAt).toLocaleDateString() : '';
+  meta.textContent = `Latest · ${nom.lat.toFixed(5)}, ${nom.lng.toFixed(5)}${when ? ' · ' + when : ''}`;
+  body.appendChild(desc);
+  body.appendChild(meta);
+  body.addEventListener('click', () => {
+    if (!currentTab) return;
+    chrome.tabs.sendMessage(currentTab.id, { type: 'S2_ZOOM_TO', lat: nom.lat, lng: nom.lng });
+    window.close();
+  });
+
+  const del = document.createElement('button');
+  del.className = 'nom-del';
+  del.textContent = '✕';
+  del.title = 'Delete';
+  del.addEventListener('click', () => {
+    chrome.tabs.sendMessage(currentTab.id, { type: 'S2_DELETE_NOMINATION', id: nom.id }, resp => {
+      if (resp && resp.nominations) renderNomList(resp.nominations);
+      else loadNominations();
+    });
+  });
+
+  item.appendChild(body);
+  item.appendChild(del);
+  nomList.appendChild(item);
+}
+
+function loadNominations() {
+  if (!currentTab) {
+    chrome.storage.local.get('s2_nominations', r => renderNomList(r.s2_nominations || []));
+    return;
+  }
+  chrome.tabs.sendMessage(currentTab.id, { type: 'S2_GET_NOMINATIONS' }, resp => {
+    if (chrome.runtime.lastError || !resp) {
+      chrome.storage.local.get('s2_nominations', r => renderNomList(r.s2_nominations || []));
+      return;
+    }
+    renderNomList(resp.nominations || []);
+  });
+}
+
+addNomBtn.addEventListener('click', () => {
+  if (!currentTab) return;
+  chrome.tabs.sendMessage(currentTab.id, { type: 'S2_START_PICK' }, () => {
+    // Popup closes so the user can click the map; pick mode lives in the page.
+    window.close();
+  });
+});
+
+seeAllBtn.addEventListener('click', () => {
+  // Must be called synchronously within this user gesture for the panel to open.
+  const opts = currentTab ? { windowId: currentTab.windowId } : {};
+  chrome.sidePanel.open(opts).catch(err => console.warn('Side panel open failed:', err));
+  window.close();
+});
+
+// Collapsible "Cell levels" section (default expanded)
+const cellHeader = document.getElementById('cellHeader');
+const cellBody   = document.getElementById('cellBody');
+cellHeader.addEventListener('click', () => {
+  const open = cellBody.classList.toggle('open');
+  cellHeader.classList.toggle('open', open);
+});
+// Hovering/clicking the "?" shows the tooltip without toggling the section
+document.getElementById('tipWrap').addEventListener('click', e => e.stopPropagation());
 
 retryBtn.addEventListener('click', queryStatus);
 

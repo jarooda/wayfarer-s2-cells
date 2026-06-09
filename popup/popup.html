@@ -127,6 +127,66 @@
       margin-bottom: 8px;
     }
 
+    .collapse-header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      padding: 2px 0;
+    }
+    .collapse-header .section-title { margin-bottom: 0; }
+
+    .chevron {
+      margin-left: auto;
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      transition: transform 0.18s;
+    }
+    .collapse-header.open .chevron { transform: rotate(90deg); }
+
+    .collapse-body { display: none; margin-top: 10px; }
+    .collapse-body.open { display: block; }
+
+    .tip-wrap { display: inline-flex; }
+    .tip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.7);
+      font-size: 10px;
+      font-weight: 700;
+      cursor: help;
+    }
+    .tip-icon:hover { background: #00bcd4; color: #fff; }
+
+    .tooltip {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: rgba(12,12,22,0.97);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.75);
+      font-size: 11px;
+      line-height: 1.5;
+      padding: 9px 11px;
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s;
+      z-index: 20;
+      pointer-events: none;
+    }
+    .tooltip strong { color: rgba(255,255,255,0.9); }
+    .tip-wrap:hover ~ .tooltip { opacity: 1; visibility: visible; }
+
     .cell-row {
       display: flex;
       align-items: center;
@@ -216,6 +276,64 @@
       text-align: center;
       line-height: 1.8;
     }
+
+    .nom-list { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+
+    .nom-empty {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
+      padding: 6px 0;
+    }
+
+    .nom-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+    }
+
+    .nom-body { flex: 1; min-width: 0; cursor: pointer; }
+    .nom-desc {
+      font-size: 12px;
+      color: #e0e0e0;
+      word-break: break-word;
+    }
+    .nom-meta {
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nom-del {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.4);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 4px;
+      line-height: 1;
+    }
+    .nom-del:hover { color: #f44336; }
+
+    .btn-secondary {
+      width: 100%;
+      margin-top: 8px;
+      padding: 7px;
+      background: transparent;
+      color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.06); color: #fff; }
   </style>
 </head>
 <body>
@@ -241,35 +359,47 @@
       </div>
 
       <div class="section">
-        <div class="section-title">Cell levels</div>
-
-        <div class="cell-row">
-          <div class="cell-check"><input type="checkbox" id="chkL14" checked></div>
-          <div class="cell-info">
-            <div class="cell-name">Level 14</div>
-            <div class="cell-desc">~10km² — determines gym count</div>
-          </div>
-          <div class="color-pick">
-            <input type="color" id="colorL14" value="#e040fb">
+        <div class="collapse-header open" id="cellHeader">
+          <span class="section-title">Cell levels</span>
+          <span class="tip-wrap" id="tipWrap"><span class="tip-icon">?</span></span>
+          <span class="chevron">▸</span>
+          <div class="tooltip">
+            <strong>Tip:</strong> Zoom in to see L17 cells (zoom ≥12) and L14 cells (zoom ≥8). L14 cells need ~2 stops for 1 gym, 6 for 2 gyms, 20 for 3 gyms.
           </div>
         </div>
 
-        <div class="cell-row">
-          <div class="cell-check"><input type="checkbox" id="chkL17" checked></div>
-          <div class="cell-info">
-            <div class="cell-name">Level 17</div>
-            <div class="cell-desc">~300m² — one stop per cell</div>
+        <div class="collapse-body open" id="cellBody">
+          <div class="cell-row">
+            <div class="cell-check"><input type="checkbox" id="chkL14" checked></div>
+            <div class="cell-info">
+              <div class="cell-name">Level 14</div>
+              <div class="cell-desc">~10km² — determines gym count</div>
+            </div>
+            <div class="color-pick">
+              <input type="color" id="colorL14" value="#e040fb">
+            </div>
           </div>
-          <div class="color-pick">
-            <input type="color" id="colorL17" value="#00bcd4">
+
+          <div class="cell-row">
+            <div class="cell-check"><input type="checkbox" id="chkL17" checked></div>
+            <div class="cell-info">
+              <div class="cell-name">Level 17</div>
+              <div class="cell-desc">~300m² — one stop per cell</div>
+            </div>
+            <div class="color-pick">
+              <input type="color" id="colorL17" value="#00bcd4">
+            </div>
           </div>
+
+          <button class="btn-primary" id="applyBtn">Apply changes</button>
         </div>
       </div>
 
-      <button class="btn-primary" id="applyBtn">Apply changes</button>
-
-      <div class="info-box">
-        <strong>Tip:</strong> Zoom in to see L17 cells (zoom ≥12) and L14 cells (zoom ≥8). L14 cells need ~2 stops for 1 gym, 6 for 2 gyms, 20 for 3 gyms.
+      <div class="section" style="margin-top:14px">
+        <div class="section-title">Future nominations</div>
+        <button class="btn-primary" id="addNomBtn">＋ Add future nomination</button>
+        <div id="nomList" class="nom-list"></div>
+        <button class="btn-secondary" id="seeAllBtn">See all</button>
       </div>
     </div>
 
