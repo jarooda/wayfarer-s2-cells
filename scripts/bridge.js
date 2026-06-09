@@ -52,6 +52,19 @@
       });
     });
 
+    // Relay map clicks (used by the "future nomination" pin picker)
+    map.addListener('click', function(e) {
+      if (!e || !e.latLng) return;
+      dispatch({ type: 'click', lat: e.latLng.lat(), lng: e.latLng.lng() });
+    });
+
+    // Pan/zoom to a saved nomination
+    window.addEventListener('s2:panto', function(ev) {
+      const d = ev.detail || {};
+      if (typeof d.lat !== 'number' || typeof d.lng !== 'number') return;
+      map.panTo({ lat: d.lat, lng: d.lng });
+      if (typeof d.zoom === 'number') map.setZoom(d.zoom);
+    });
   }
 
   function waitAndAttach(attempts) {
