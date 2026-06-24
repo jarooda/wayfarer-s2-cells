@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "S2 Cell Overlay – Wayfarer",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Overlays S2 cells (L14 & L17) on Niantic Wayfarer maps",
   "permissions": ["activeTab", "storage", "sidePanel"],
   "host_permissions": ["*://wayfarer.nianticlabs.com/*"],

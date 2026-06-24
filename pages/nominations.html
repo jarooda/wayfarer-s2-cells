@@ -1,18 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Future Nominations</title>
+  <!-- JLDS design system — https://jlds.jaluwibowo.id/guide/vanilla-html.html -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jarooda/jlds@main/registry/css/all.css">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #14141f;
-      color: #e0e0e0;
       min-height: 100vh;
-      padding: 18px 14px 48px;
+      padding: var(--space-5) var(--space-4) var(--space-12);
     }
 
     .wrap { max-width: 760px; margin: 0 auto; }
@@ -21,33 +18,40 @@
       display: flex;
       align-items: baseline;
       justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 4px;
+      gap: var(--space-3);
+      margin-bottom: var(--space-1);
     }
-    .page-header h1 { font-size: 18px; font-weight: 700; color: #fff; }
-    .count { font-size: 12px; color: rgba(255,255,255,0.45); }
+    .page-header h1 {
+      font-size: var(--text-xl);
+      font-weight: var(--weight-bold);
+      color: var(--text-primary);
+      letter-spacing: var(--tracking-tight);
+      margin: 0;
+    }
+    .count { font-size: var(--text-xs); color: var(--text-tertiary); }
 
-    .subtitle { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 20px; }
+    .subtitle { font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: var(--space-5); }
 
     .empty {
       text-align: center;
-      padding: 60px 0;
-      color: rgba(255,255,255,0.4);
-      font-size: 14px;
-      line-height: 1.8;
+      padding: var(--space-16) 0;
+      color: var(--text-tertiary);
+      font-size: var(--text-base);
+      line-height: var(--leading-relaxed);
     }
-    .empty .icon { font-size: 40px; display: block; margin-bottom: 10px; }
+    .empty .icon { font-size: 40px; display: block; margin-bottom: var(--space-3); }
 
     .nom {
       position: relative;
       display: flex;
       align-items: flex-start;
-      gap: 14px;
-      background: #1c1c2e;
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 12px;
-      padding: 16px 18px;
-      margin-bottom: 12px;
+      gap: var(--space-4);
+      background: var(--surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      box-shadow: var(--elevation-card);
+      padding: var(--space-4) var(--space-5);
+      margin-bottom: var(--space-3);
     }
 
     .nom-pin {
@@ -56,11 +60,11 @@
       flex-shrink: 0;
       background: transparent;
       border: 1px solid transparent;
-      border-radius: 8px;
+      border-radius: var(--radius-md);
       cursor: pointer;
       padding: 0 4px;
     }
-    .nom-pin:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
+    .nom-pin:hover { background: var(--surface-hover); border-color: var(--border-default); }
 
     /* Emoji picker (markup from shared scripts/emoji.js) */
     .s2-emoji-picker { width: 250px; }
@@ -69,21 +73,21 @@
       top: 48px;
       left: 16px;
       z-index: 30;
-      background: #20203a;
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 10px;
-      padding: 10px 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--space-2) var(--space-3);
+      box-shadow: var(--elevation-popover);
       max-height: 220px;
       overflow-y: auto;
     }
     .s2-emoji-label {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.6px;
+      font-size: var(--text-2xs);
+      font-weight: var(--weight-bold);
+      letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
-      color: rgba(255,255,255,0.4);
-      margin: 8px 0 4px;
+      color: var(--text-tertiary);
+      margin: var(--space-2) 0 4px;
     }
     .s2-emoji-label:first-child { margin-top: 0; }
     .s2-emoji-row { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -95,14 +99,14 @@
       justify-content: center;
       font-size: 18px;
       line-height: 1;
-      background: rgba(255,255,255,0.05);
+      background: var(--surface-muted);
       border: 1px solid transparent;
-      border-radius: 7px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
       padding: 0;
     }
-    .s2-emoji-btn:hover { background: rgba(255,255,255,0.14); }
-    .s2-emoji-btn.selected { border-color: #00bcd4; background: rgba(0,188,212,0.2); }
+    .s2-emoji-btn:hover { background: var(--surface-hover); }
+    .s2-emoji-btn.selected { border-color: var(--accent); background: var(--accent-subtle); }
 
     .nom-main { flex: 1; min-width: 0; }
 
@@ -112,51 +116,54 @@
       min-height: 36px;
       background: transparent;
       border: 1px solid transparent;
-      border-radius: 7px;
-      color: #fff;
-      font: 600 15px/1.4 inherit;
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-weight: var(--weight-semibold);
+      font-size: var(--text-md);
+      line-height: var(--leading-snug);
       padding: 6px 8px;
       margin: -6px -8px 2px;
       resize: vertical;
       overflow: auto;
     }
-    .nom-title:hover { border-color: rgba(255,255,255,0.12); }
-    .nom-title:focus { outline: none; border-color: #00bcd4; background: rgba(255,255,255,0.04); }
+    .nom-title:hover { border-color: var(--border-default); }
+    .nom-title:focus { outline: none; border-color: var(--border-focus); box-shadow: var(--ring-focus); background: var(--surface-sunken); }
 
     .nom-meta {
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-top: 8px;
-      font-size: 12px;
+      gap: var(--space-4);
+      margin-top: var(--space-2);
+      font-size: var(--text-xs);
     }
 
     .coord-link {
-      color: #4fc3f7;
+      color: var(--info);
       text-decoration: none;
       font-variant-numeric: tabular-nums;
-      border-bottom: 1px dotted rgba(79,195,247,0.5);
+      border-bottom: 1px dotted color-mix(in srgb, var(--info) 50%, transparent);
     }
-    .coord-link:hover { color: #81d4fa; }
+    .coord-link:hover { color: var(--info-hover); }
 
-    .nom-date { color: rgba(255,255,255,0.4); }
-    .saved-flash { color: #4caf50; font-size: 11px; opacity: 0; transition: opacity 0.2s; }
+    .nom-date { color: var(--text-tertiary); }
+    .saved-flash { color: var(--success); font-size: var(--text-2xs); opacity: 0; transition: opacity var(--duration-base) var(--ease-standard); }
     .saved-flash.show { opacity: 1; }
 
-    .nom-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+    .nom-actions { display: flex; flex-direction: column; gap: var(--space-2); flex-shrink: 0; }
     .nom-actions .icon-btn { white-space: nowrap; text-align: left; }
 
     .icon-btn {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.6);
-      border-radius: 8px;
-      padding: 7px 11px;
-      font-size: 13px;
+      background: var(--surface-card);
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--text-sm);
       cursor: pointer;
+      transition: var(--transition-control);
     }
-    .icon-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
-    .icon-btn.del:hover { background: rgba(244,67,54,0.18); border-color: rgba(244,67,54,0.5); color: #ff7961; }
+    .icon-btn:hover { background: var(--surface-hover); border-color: var(--border-strong); color: var(--text-primary); }
+    .icon-btn.del:hover { background: var(--danger-subtle); border-color: var(--danger); color: var(--danger-text); }
   </style>
 </head>
 <body>
