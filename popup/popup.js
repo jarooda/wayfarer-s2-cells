@@ -54,7 +54,7 @@ async function queryStatus() {
   currentTab = tab;
 
   // Must be on Wayfarer
-  if (!tab.url || !tab.url.includes('wayfarer.nianticlabs.com')) {
+  if (!tab.url || !tab.url.includes('wayfarer.scopely.com')) {
     showNoMapUI('Not on Wayfarer');
     return;
   }
