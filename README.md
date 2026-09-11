@@ -1,6 +1,6 @@
 # S2 Cell Overlay for Wayfarer
 
-A browser extension that overlays **S2 cells (Level 14 & Level 17)** directly on the [Niantic Wayfarer](https://wayfarer.nianticlabs.com/new/mapview) map.
+A browser extension that overlays **S2 cells (Level 14 & Level 17)** directly on the [Wayfarer](https://wayfarer.scopely.com/new/mapview) map.
 
 ![S2 Cell Overlay screenshot](assets/screenshot.png)
 
@@ -19,6 +19,7 @@ Knowing these boundaries helps you plan Wayfarer nominations strategically.
 - Cells update as you pan and zoom
 - Customisable colours for each level
 - Toggle on/off from the extension popup
+- Plan future nominations and jump the map back to any of them from the side panel
 - Persists your settings between sessions
 
 ## Installation
@@ -29,7 +30,7 @@ This extension is not on the Chrome Web Store. Install it manually:
 2. Open Chrome and go to `chrome://extensions`
 3. Enable **Developer mode** (top right toggle)
 4. Click **Load unpacked** and select the unzipped `s2-extension` folder
-5. Navigate to `https://wayfarer.nianticlabs.com/new/mapview`
+5. Navigate to `https://wayfarer.scopely.com/new/mapview`
 6. Click the extension icon and toggle **Show S2 cells**
 
 ## Usage
@@ -40,6 +41,12 @@ This extension is not on the Chrome Web Store. Install it manually:
 - Use the colour pickers to customise each level
 - Click **Apply changes** after adjusting colours
 
+### Future nominations
+
+- Click **+ Add future nomination** to save a spot you are planning to submit
+- **See all** opens the side panel with every saved nomination
+- From the side panel you can pan the Wayfarer map straight back to any nomination
+
 ## How it works
 
 The extension injects a bridge script into the Wayfarer page that reads the embedded Google Maps instance from Angular's component context, then relays the current map bounds to a content script that draws an SVG overlay. All S2 cell geometry is computed locally using a pure JavaScript implementation — no external requests are made.
@@ -48,15 +55,19 @@ The extension injects a bridge script into the Wayfarer page that reads the embe
 
 - Chrome / Chromium-based browsers (Edge, Brave, etc.)
 - Manifest V3
-- Tested on `wayfarer.nianticlabs.com/new/mapview`
+- Tested on `wayfarer.scopely.com/new/mapview`
+
+> **Wayfarer moved to Scopely.** From **v2.0.0** the extension runs only on
+> `wayfarer.scopely.com`. The old `wayfarer.nianticlabs.com` domain is no longer
+> supported — if the overlay stopped appearing, update to the latest release.
 
 ## Privacy & Security
 
-The extension requests only `activeTab` and `storage` permissions. It reads no personal data, makes no network requests of any kind, and stores only your display preferences (colours, toggle state) locally on your device. All S2 geometry is computed entirely in the browser.
+The extension requests only `activeTab`, `storage` and `sidePanel` permissions, plus host access to `wayfarer.scopely.com`. It reads no personal data, makes no network requests of any kind, and stores only your display preferences (colours, toggle state) and your saved nominations locally on your device. All S2 geometry is computed entirely in the browser.
 
 ## Disclaimer
 
-This is a **read-only, passive visual overlay**. It does not interact with Niantic's servers, does not automate any actions, and does not modify any game or review data. Use at your own discretion and in accordance with Wayfarer's Terms of Service.
+This is a **read-only, passive visual overlay**. It does not interact with Wayfarer's servers, does not automate any actions, and does not modify any game or review data. Use at your own discretion and in accordance with Wayfarer's Terms of Service.
 
 ## License
 

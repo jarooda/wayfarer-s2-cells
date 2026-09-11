@@ -25,7 +25,7 @@ function fmtDate(iso) {
 
 // Pan the Wayfarer map (in its tab) to a nomination.
 function showOnMap(nom, btn) {
-  chrome.tabs.query({ url: '*://wayfarer.nianticlabs.com/*' }, tabs => {
+  chrome.tabs.query({ url: '*://wayfarer.scopely.com/*' }, tabs => {
     if (!tabs || !tabs.length) {
       if (btn) flashBtn(btn, 'Open Wayfarer first');
       return;
