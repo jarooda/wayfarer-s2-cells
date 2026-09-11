@@ -19,6 +19,7 @@ Knowing these boundaries helps you plan Wayfarer nominations strategically.
 - Cells update as you pan and zoom
 - Customisable colours for each level
 - Toggle on/off from the extension popup
+- Plan future nominations and jump the map back to any of them from the side panel
 - Persists your settings between sessions
 
 ## Installation
@@ -40,6 +41,12 @@ This extension is not on the Chrome Web Store. Install it manually:
 - Use the colour pickers to customise each level
 - Click **Apply changes** after adjusting colours
 
+### Future nominations
+
+- Click **+ Add future nomination** to save a spot you are planning to submit
+- **See all** opens the side panel with every saved nomination
+- From the side panel you can pan the Wayfarer map straight back to any nomination
+
 ## How it works
 
 The extension injects a bridge script into the Wayfarer page that reads the embedded Google Maps instance from Angular's component context, then relays the current map bounds to a content script that draws an SVG overlay. All S2 cell geometry is computed locally using a pure JavaScript implementation — no external requests are made.
@@ -50,9 +57,13 @@ The extension injects a bridge script into the Wayfarer page that reads the embe
 - Manifest V3
 - Tested on `wayfarer.scopely.com/new/mapview`
 
+> **Wayfarer moved to Scopely.** From **v2.0.0** the extension runs only on
+> `wayfarer.scopely.com`. The old `wayfarer.nianticlabs.com` domain is no longer
+> supported — if the overlay stopped appearing, update to the latest release.
+
 ## Privacy & Security
 
-The extension requests only `activeTab` and `storage` permissions. It reads no personal data, makes no network requests of any kind, and stores only your display preferences (colours, toggle state) locally on your device. All S2 geometry is computed entirely in the browser.
+The extension requests only `activeTab`, `storage` and `sidePanel` permissions, plus host access to `wayfarer.scopely.com`. It reads no personal data, makes no network requests of any kind, and stores only your display preferences (colours, toggle state) and your saved nominations locally on your device. All S2 geometry is computed entirely in the browser.
 
 ## Disclaimer
 
