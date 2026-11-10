@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "S2 Cell Overlay – Wayfarer",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Overlays S2 cells (L14 & L17) on Wayfarer maps",
   "permissions": ["activeTab", "storage", "sidePanel"],
   "host_permissions": ["*://wayfarer.scopely.com/*"],
@@ -23,7 +23,7 @@
     {
       "matches": ["*://wayfarer.scopely.com/*"],
       "js": ["scripts/bridge.js"],
-      "run_at": "document_idle",
+      "run_at": "document_start",
       "world": "MAIN"
     },
     {
