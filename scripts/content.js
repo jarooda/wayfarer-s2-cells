@@ -306,6 +306,8 @@
 
   window.addEventListener('s2:response', function(e) {
     const detail = e.detail;
+    // 'mapfound' means the bridge has the map but getBounds() is not ready yet.
+    if (detail.type === 'mapfound') mapReady = true;
     if (detail.type === 'bounds' && detail.bounds) {
       mapReady = true;
       lastBounds = detail.bounds;
@@ -323,7 +325,7 @@
         if (answered) return;
         answered = true;
         window.removeEventListener('s2:response', handler);
-        if (e.detail.type === 'bounds') mapReady = true;
+        if (e.detail.type === 'bounds' || e.detail.type === 'mapfound') mapReady = true;
         sendResponse({ mapFound: mapReady, mapType: mapReady ? 'googlemaps' : null, overlayActive, settings });
       };
       window.addEventListener('s2:response', handler);
