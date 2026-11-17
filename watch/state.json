@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-11-17T11:08:31.732Z",
+  "bundles": {
+    "main": "index-BglGl-r7.js",
+    "mapPage": "MapViewPage-o3kgEzw_.js"
+  },
+  "signals": {
+    "maps-loader": true,
+    "map-constructor": true,
+    "map-listeners": true
+  }
+}
