@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-11-17T11:08:31.732Z",
+  "checkedAt": "2026-11-19T11:21:39.850Z",
   "bundles": {
-    "main": "index-BglGl-r7.js",
-    "mapPage": "MapViewPage-o3kgEzw_.js"
+    "main": "index-C4M5pyMB.js",
+    "mapPage": "MapViewPage-DGTdwmAN.js"
   },
   "signals": {
     "maps-loader": true,
