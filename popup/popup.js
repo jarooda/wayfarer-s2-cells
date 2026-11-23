@@ -14,6 +14,8 @@ const addNomBtn    = document.getElementById('addNomBtn');
 const nomList      = document.getElementById('nomList');
 const seeAllBtn    = document.getElementById('seeAllBtn');
 
+document.getElementById('appVersion').textContent = 'v' + chrome.runtime.getManifest().version;
+
 let currentTab = null;
 let isActive   = false;
 
