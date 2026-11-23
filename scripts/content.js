@@ -6,7 +6,6 @@
   let settings = { l14: true, l17: true, l14Color: '#e040fb', l17Color: '#00bcd4' };
   let mapReady = false;
   let lastBounds = null;
-  let svgEl = null;
   let throttle = null;
 
   // Future nominations
@@ -36,54 +35,93 @@
     return { x, y };
   }
 
-  // ── SVG overlay ────────────────────────────────────────────────────────────
+  // ── Canvas overlay ─────────────────────────────────────────────────────────
+  // One <canvas> for every cell, drawn as a single path per level: one fill and
+  // one stroke call, instead of one DOM node per cell.
 
-  function getOrCreateSVG() {
-    if (svgEl && document.contains(svgEl)) return svgEl;
+  // Hard cap per level. Above this the lines are a few pixels apart anyway, so
+  // the level is skipped instead of enumerated. Keeps zoomed-out views cheap.
+  const MAX_CELLS_PER_LEVEL = 10000;
+  // Average S2 cell area (km²): Earth's surface / (6 faces × 4^level).
+  const EARTH_KM2 = 510.1e6;
+  function avgCellKm2(level) { return EARTH_KM2 / (6 * Math.pow(4, level)); }
+
+  function estimateCellCount(bounds, level) {
+    const midLat = (bounds.swLat + bounds.neLat) / 2;
+    const heightKm = Math.abs(bounds.neLat - bounds.swLat) * 111.32;
+    let lngSpan = bounds.neLng - bounds.swLng;
+    if (lngSpan < 0) lngSpan += 360;
+    const widthKm = lngSpan * 111.32 * Math.cos(midLat * Math.PI / 180);
+    return (heightKm * widthKm) / avgCellKm2(level);
+  }
+
+  let canvasEl = null;
+
+  function getOrCreateCanvas() {
+    if (canvasEl && document.contains(canvasEl)) return canvasEl;
     const mapDiv = document.querySelector('.gm-style');
     if (!mapDiv) return null;
-    svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svgEl.id = 's2-overlay';
-    svgEl.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:200;';
-    mapDiv.appendChild(svgEl);
-    return svgEl;
+    canvasEl = document.createElement('canvas');
+    canvasEl.id = 's2-overlay';
+    canvasEl.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:200;';
+    mapDiv.appendChild(canvasEl);
+    return canvasEl;
+  }
+
+  function removeOverlay() {
+    if (canvasEl) { canvasEl.remove(); canvasEl = null; }
   }
 
   function renderOverlay(bounds) {
     if (!overlayActive) return;
-    const svg = getOrCreateSVG();
-    if (!svg) return;
-    svg.innerHTML = '';
-
-    const mapDiv = document.querySelector('.gm-style');
-    if (!mapDiv) return;
+    const canvas = getOrCreateCanvas();
+    if (!canvas) return;
+    const mapDiv = canvas.parentElement;
     const w = mapDiv.offsetWidth, h = mapDiv.offsetHeight;
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
     const zoom = bounds.zoom;
-    const showL14 = settings.l14 && zoom >= 8;
-    const showL17 = settings.l17 && zoom >= 12;
+    const fitsL14 = estimateCellCount(bounds, 14) <= MAX_CELLS_PER_LEVEL;
+    const fitsL17 = estimateCellCount(bounds, 17) <= MAX_CELLS_PER_LEVEL;
+    const showL14 = settings.l14 && fitsL14;
+    const showL17 = settings.l17 && fitsL17;
 
-    if (!showL14 && !showL17) { showZoomHint(zoom); return; }
-    hideZoomHint();
+    const hidden = [];
+    if (settings.l14 && !fitsL14) hidden.push('L14');
+    if (settings.l17 && !fitsL17) hidden.push('L17');
+    if (hidden.length) showZoomHint(zoom, hidden); else hideZoomHint();
+    if (!showL14 && !showL17) return;
 
-    function drawCells(cells, color, strokeW, fillOpacity) {
+    function drawCells(level, color, strokeW, fillOpacity) {
+      const cells = S2.getCellsForBounds(bounds.swLat, bounds.swLng, bounds.neLat, bounds.neLng, level);
+      ctx.beginPath();
       for (const cell of cells) {
-        const pts = cell.corners.map(c => {
-          const p = project(c.lat, c.lng, bounds, w, h);
-          return `${p.x},${p.y}`;
-        });
-        const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        poly.setAttribute('points', pts.join(' '));
-        poly.setAttribute('fill', color);
-        poly.setAttribute('fill-opacity', fillOpacity);
-        poly.setAttribute('stroke', color);
-        poly.setAttribute('stroke-width', strokeW);
-        poly.setAttribute('stroke-opacity', '0.75');
-        svg.appendChild(poly);
+        const c = cell.corners;
+        for (let k = 0; k < c.length; k++) {
+          const p = project(c[k].lat, c[k].lng, bounds, w, h);
+          if (k === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+        }
+        ctx.closePath();
       }
+      ctx.fillStyle = color;
+      ctx.globalAlpha = fillOpacity;
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = strokeW;
+      ctx.globalAlpha = 0.75;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
     }
 
-    if (showL17) drawCells(S2.getCellsForBounds(bounds.swLat, bounds.swLng, bounds.neLat, bounds.neLng, 17), settings.l17Color, 1, '0.04');
-    if (showL14) drawCells(S2.getCellsForBounds(bounds.swLat, bounds.swLng, bounds.neLat, bounds.neLng, 14), settings.l14Color, 2, '0.06');
+    if (showL17) drawCells(17, settings.l17Color, 1, 0.04);
+    if (showL14) drawCells(14, settings.l14Color, 2, 0.06);
   }
 
   function requestBounds() {
@@ -285,7 +323,7 @@
     if (lastBounds) renderNominations(lastBounds);
   });
 
-  function showZoomHint(zoom) {
+  function showZoomHint(zoom, levels) {
     let el = document.getElementById('s2-zoom-hint');
     if (!el) {
       el = document.createElement('div');
@@ -293,7 +331,7 @@
       el.style.cssText = 'position:fixed;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(20,20,20,.85);color:#fff;font:13px/1 system-ui;padding:7px 16px;border-radius:20px;z-index:99999;pointer-events:none;';
       document.body.appendChild(el);
     }
-    el.textContent = `S2: zoom in more (current: ${zoom})`;
+    el.textContent = `S2 ${levels.join(' & ')}: zoom in to show (current: ${zoom})`;
     el.style.display = 'block';
   }
 
@@ -347,7 +385,7 @@
         else requestBounds();
         sendResponse({ ok: true, mapType: 'googlemaps' });
       } else {
-        if (svgEl) { svgEl.remove(); svgEl = null; }
+        removeOverlay();
         hideZoomHint();
         sendResponse({ ok: true });
       }

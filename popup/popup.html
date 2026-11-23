@@ -24,6 +24,16 @@
       color: #fff;
       letter-spacing: var(--tracking-tight);
       margin: 0;
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+    }
+
+    .header .version {
+      font-size: var(--text-xs);
+      font-weight: var(--weight-regular, 400);
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0;
     }
 
     .header .subtitle {
@@ -255,7 +265,7 @@
 </head>
 <body>
   <div class="header">
-    <h1>⬡ S2 Cell Overlay</h1>
+    <h1>⬡ S2 Cell Overlay <span class="version" id="appVersion"></span></h1>
     <div class="subtitle">Pokémon GO planning tool</div>
   </div>
 
